@@ -1,0 +1,27 @@
+-- Seed mẫu chỉ dùng cho môi trường test/local. Không chạy trên production nếu đã có dữ liệu thật.
+-- Sau khi tạo user trong Supabase Auth, thay các UUID bên dưới bằng id thật từ auth.users.
+
+-- update public.profiles set role = 'ADMIN', full_name = 'Admin Kho Máy' where id = '00000000-0000-0000-0000-000000000000';
+
+-- insert into public.phones (
+--   name, model, storage, color, kind, battery, appearance, screen_status,
+--   face_id_status, camera_status, sim_status, repair_history, description,
+--   price, added_by, status
+-- ) values (
+--   'iPhone 14 Pro Max 256GB Deep Purple',
+--   '14 Pro Max',
+--   '256GB',
+--   'Deep Purple',
+--   'QUOC_TE',
+--   91,
+--   'Đẹp 98%',
+--   'Zin, hiển thị đẹp',
+--   'Hoạt động tốt',
+--   'Hoạt động tốt',
+--   'Nhận SIM ổn định',
+--   null,
+--   'Máy test cho kho local',
+--   18500000,
+--   '00000000-0000-0000-0000-000000000000',
+--   'CON_HANG'
+-- );

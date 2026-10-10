@@ -6,21 +6,11 @@ import { PhoneCard } from "@/components/phone-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getRequiredProfile } from "@/lib/data";
-import type { Phone } from "@/types/domain";
+import { getAvailablePhones } from "@/lib/data";
 
 export default async function StockPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
-  const { supabase, profile } = await getRequiredProfile();
-  let query = supabase
-    .from("phones")
-    .select("*, profiles:added_by(full_name), phone_images(*)")
-    .eq("status", "CON_HANG")
-    .order("created_at", { ascending: false });
-
-  if (q.trim()) query = query.or(`name.ilike.%${q.trim()}%,inventory_code.ilike.%${q.trim()}%,model.ilike.%${q.trim()}%`);
-  const { data, error } = await query.returns<Phone[]>();
-  if (error) throw error;
+  const { profile, phones } = await getAvailablePhones(q.trim());
 
   return (
     <AppShell profile={profile}>
@@ -42,9 +32,9 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
         </div>
         <Button type="submit" variant="secondary">Tìm</Button>
       </form>
-      {data?.length ? (
+      {phones.length ? (
         <div className="grid gap-3 xl:grid-cols-2">
-          {data.map((phone) => (
+          {phones.map((phone) => (
             <PhoneCard key={phone.id} phone={phone} />
           ))}
         </div>

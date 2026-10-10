@@ -3,11 +3,11 @@ import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { getSalesAndRanking } from "@/lib/data";
+import { getSalesHistory } from "@/lib/data";
 import { formatDateTime, formatVnd } from "@/lib/format";
 
 export default async function HistoryPage() {
-  const { profile, sales } = await getSalesAndRanking();
+  const { profile, sales } = await getSalesHistory();
 
   return (
     <AppShell profile={profile}>

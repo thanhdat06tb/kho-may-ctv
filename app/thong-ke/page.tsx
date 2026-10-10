@@ -2,11 +2,11 @@ import { Trophy } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { getSalesAndRanking } from "@/lib/data";
+import { getRankingOnly } from "@/lib/data";
 import { formatDateTime, formatVnd } from "@/lib/format";
 
 export default async function StatsPage() {
-  const { profile, ranking } = await getSalesAndRanking();
+  const { profile, ranking } = await getRankingOnly();
 
   return (
     <AppShell profile={profile}>

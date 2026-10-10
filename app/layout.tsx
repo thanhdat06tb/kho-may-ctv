@@ -3,6 +3,8 @@ import { Toaster } from "sonner";
 import { ServiceWorkerRegister } from "./sw-register";
 import "./globals.css";
 
+export const preferredRegion = ["hnd1", "sin1"];
+
 export const metadata: Metadata = {
   title: "Kho Máy CTV",
   description: "PWA quản lý kho iPhone cũ cho cộng tác viên",

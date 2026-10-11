@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { ProfileRow, UndoSaleButton } from "@/components/admin-panels";
 import { Badge } from "@/components/ui/badge";
@@ -7,11 +6,11 @@ import { getAdminData } from "@/lib/data";
 import { formatDateTime, formatVnd } from "@/lib/format";
 
 export default async function AdminPage() {
-  const { profile, profiles, sales, logs } = await getAdminData();
+  const { profiles, sales, logs } = await getAdminData();
 
   return (
-    <AppShell profile={profile}>
-      <PageHeader title="Quản trị" description="Quản lý CTV, kiểm tra giao dịch và nhật ký thao tác." />
+    <>
+      <PageHeader title="Quản trị" description="Quản lý CTV, kiểm tra giao dịch và nhật ký thao tác." showBack />
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
           <CardHeader>
@@ -63,6 +62,6 @@ export default async function AdminPage() {
           ))}
         </CardContent>
       </Card>
-    </AppShell>
+    </>
   );
 }

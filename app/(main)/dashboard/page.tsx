@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Activity, Boxes, CircleDollarSign, PackageCheck, Plus, Smartphone } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +16,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <AppShell profile={stats.profile}>
+    <>
       <PageHeader
         title="Tổng quan"
         description="Số liệu được đọc trực tiếp từ Supabase theo quyền tài khoản."
@@ -65,6 +64,6 @@ export default async function DashboardPage() {
           </div>
         </CardContent>
       </Card>
-    </AppShell>
+    </>
   );
 }

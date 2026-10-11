@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Plus, Search } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { PhoneCard } from "@/components/phone-card";
 import { Button } from "@/components/ui/button";
@@ -10,10 +9,10 @@ import { getAvailablePhones } from "@/lib/data";
 
 export default async function StockPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q = "" } = await searchParams;
-  const { profile, phones } = await getAvailablePhones(q.trim());
+  const { phones } = await getAvailablePhones(q.trim());
 
   return (
-    <AppShell profile={profile}>
+    <>
       <PageHeader
         title="Kho còn hàng"
         description="Chỉ hiển thị máy trạng thái còn hàng."
@@ -43,6 +42,6 @@ export default async function StockPage({ searchParams }: { searchParams: Promis
           <CardContent className="py-10 text-center text-sm text-slate-400">Không có máy còn hàng phù hợp.</CardContent>
         </Card>
       )}
-    </AppShell>
+    </>
   );
 }

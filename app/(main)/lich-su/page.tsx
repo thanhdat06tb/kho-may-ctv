@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,11 +6,11 @@ import { getSalesHistory } from "@/lib/data";
 import { formatDateTime, formatVnd } from "@/lib/format";
 
 export default async function HistoryPage() {
-  const { profile, sales } = await getSalesHistory();
+  const { sales } = await getSalesHistory();
 
   return (
-    <AppShell profile={profile}>
-      <PageHeader title="Lịch sử bán" description="Giao dịch đã hoàn tác không xuất hiện ở danh sách này." />
+    <>
+      <PageHeader title="Lịch sử bán" description="Giao dịch đã hoàn tác không xuất hiện ở danh sách này." showBack />
       <div className="space-y-3">
         {sales.length ? (
           sales.map((sale) => (
@@ -40,6 +39,6 @@ export default async function HistoryPage() {
           </Card>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

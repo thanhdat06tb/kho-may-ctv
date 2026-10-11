@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { Camera, ShieldCheck } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { PhoneForm } from "@/components/phone-form";
 import { SellDialog } from "@/components/sell-dialog";
@@ -16,8 +15,8 @@ export default async function PhoneDetailPage({ params }: { params: Promise<{ id
   const canEdit = profile.role === "ADMIN" || (phone.added_by === profile.id && phone.status === "CON_HANG");
 
   return (
-    <AppShell profile={profile}>
-      <PageHeader title={phone.name} description={`${phone.inventory_code} · ${phone.model}`} action={<SellDialog phone={phone} />} />
+    <>
+      <PageHeader title={phone.name} description={`${phone.inventory_code} · ${phone.model}`} action={<SellDialog phone={phone} />} showBack />
       <div className="grid gap-4 xl:grid-cols-[1fr_26rem]">
         <div className="space-y-4">
           <Card className="overflow-hidden">
@@ -79,7 +78,7 @@ export default async function PhoneDetailPage({ params }: { params: Promise<{ id
           </Card>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }
 

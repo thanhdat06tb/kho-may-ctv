@@ -1,16 +1,15 @@
 import { Trophy } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
 import { PageHeader } from "@/components/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { getRankingOnly } from "@/lib/data";
 import { formatDateTime, formatVnd } from "@/lib/format";
 
 export default async function StatsPage() {
-  const { profile, ranking } = await getRankingOnly();
+  const { ranking } = await getRankingOnly();
 
   return (
-    <AppShell profile={profile}>
-      <PageHeader title="Bảng xếp hạng" description="Chỉ tính giao dịch hợp lệ, tự loại giao dịch đã hoàn tác." />
+    <>
+      <PageHeader title="Bảng xếp hạng" description="Chỉ tính giao dịch hợp lệ, tự loại giao dịch đã hoàn tác." showBack />
       <div className="space-y-3">
         {ranking.length ? (
           ranking.map((row, index) => (
@@ -34,6 +33,6 @@ export default async function StatsPage() {
           </Card>
         )}
       </div>
-    </AppShell>
+    </>
   );
 }

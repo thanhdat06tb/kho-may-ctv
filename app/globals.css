@@ -58,3 +58,12 @@ a {
     padding-bottom: calc(env(safe-area-inset-bottom) + 5.5rem);
   }
 }
+
+@keyframes slide-progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}

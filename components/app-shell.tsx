@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { BarChart3, Boxes, History, Home, LogOut, Plus, ShieldCheck, UserRound } from "lucide-react";
@@ -22,7 +23,27 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
   const pathname = usePathname();
   const router = useRouter();
   const online = useOnline();
-  useStockRealtime(online);
+  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const refreshable = !pathname.startsWith("/kho/them");
+  useStockRealtime(online, refreshable);
+
+  const items = useMemo(
+    () => (profile.role === "ADMIN" ? [...navItems, { href: "/admin", label: "Admin", icon: ShieldCheck }] : navItems),
+    [profile.role]
+  );
+
+  useEffect(() => {
+    items.forEach((item) => router.prefetch(item.href));
+    router.prefetch("/kho/them");
+  }, [items, router]);
+
+  useEffect(() => {
+    setNavigatingTo(null);
+  }, [pathname]);
+
+  function handleNavigate(href: string) {
+    if (href !== pathname) setNavigatingTo(href);
+  }
 
   async function handleLogout() {
     await createClient().auth.signOut();
@@ -30,10 +51,13 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
     router.replace("/login");
   }
 
-  const items = profile.role === "ADMIN" ? [...navItems, { href: "/admin", label: "Admin", icon: ShieldCheck }] : navItems;
-
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[17rem_1fr]">
+      {navigatingTo ? (
+        <div className="fixed left-0 right-0 top-0 z-50 h-1 overflow-hidden bg-mint/15">
+          <div className="h-full w-1/2 animate-[slide-progress_0.9s_ease-in-out_infinite] bg-mint" />
+        </div>
+      ) : null}
       <aside className="hidden border-r border-border bg-surface/80 px-4 py-5 lg:block">
         <div className="mb-8 flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-lg bg-mint text-xl font-black text-slate-950">K</div>
@@ -50,6 +74,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => handleNavigate(item.href)}
                 className={cn(
                   "flex h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-slate-300 transition hover:bg-white/8",
                   active && "bg-mint/14 text-mint"
@@ -91,6 +116,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => handleNavigate(item.href)}
                 className={cn(
                   "flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[11px] font-semibold text-slate-400",
                   active && "bg-mint/14 text-mint"

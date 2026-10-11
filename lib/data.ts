@@ -2,21 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AuditLog, Phone, Profile, Sale } from "@/types/domain";
 
-type DashboardSummary = {
-  available_count: number;
-  sold_count: number;
-  total_revenue: number;
-  month_sales_count: number;
-};
-
-type RankingRow = {
-  seller_id: string;
-  name: string;
-  count: number;
-  total: number;
-  last: string;
-};
-
 type RankingItem = {
   name: string;
   count: number;
@@ -150,39 +135,24 @@ export async function getPhone(id: string) {
 
 export async function getDashboardStats() {
   const { supabase, profile } = await getRequiredProfile();
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
 
-  const [summaryResult, logs] = await Promise.all([
-    supabase.rpc("get_dashboard_summary").single<DashboardSummary>(),
+  const [available, sold, salesTotal, monthSales, logs] = await Promise.all([
+    supabase.from("phones").select("id", { count: "exact", head: true }).eq("status", "CON_HANG"),
+    supabase.from("phones").select("id", { count: "exact", head: true }).eq("status", "DA_BAN"),
+    supabase.from("sales").select("final_price").is("voided_at", null).limit(1000),
+    supabase.from("sales").select("id", { count: "exact", head: true }).is("voided_at", null).gte("sold_at", monthStart.toISOString()),
     supabase.from("audit_logs").select(auditSelect).order("created_at", { ascending: false }).limit(8).returns<AuditLog[]>()
   ]);
 
-  let summary = summaryResult.data;
-  if (summaryResult.error) {
-    const monthStart = new Date();
-    monthStart.setDate(1);
-    monthStart.setHours(0, 0, 0, 0);
-
-    const [available, sold, salesTotal, monthSales] = await Promise.all([
-      supabase.from("phones").select("id", { count: "exact", head: true }).eq("status", "CON_HANG"),
-      supabase.from("phones").select("id", { count: "exact", head: true }).eq("status", "DA_BAN"),
-      supabase.from("sales").select("final_price").is("voided_at", null),
-      supabase.from("sales").select("id", { count: "exact", head: true }).is("voided_at", null).gte("sold_at", monthStart.toISOString())
-    ]);
-
-    summary = {
-      available_count: available.count ?? 0,
-      sold_count: sold.count ?? 0,
-      total_revenue: salesTotal.data?.reduce((sum, row) => sum + Number(row.final_price), 0) ?? 0,
-      month_sales_count: monthSales.count ?? 0
-    };
-  }
-
   return {
     profile,
-    availableCount: summary?.available_count ?? 0,
-    soldCount: summary?.sold_count ?? 0,
-    totalRevenue: Number(summary?.total_revenue ?? 0),
-    monthSalesCount: summary?.month_sales_count ?? 0,
+    availableCount: available.count ?? 0,
+    soldCount: sold.count ?? 0,
+    totalRevenue: salesTotal.data?.reduce((sum, row) => sum + Number(row.final_price), 0) ?? 0,
+    monthSalesCount: monthSales.count ?? 0,
     logs: logs.data ?? []
   };
 }
@@ -218,28 +188,8 @@ export async function getSalesHistory(from?: string, to?: string) {
 }
 
 export async function getRankingOnly(from?: string, to?: string): Promise<{ profile: Profile; ranking: RankingItem[] }> {
-  const { supabase, profile } = await getRequiredProfile();
-  const { data, error } = await supabase
-    .rpc("get_sales_ranking", {
-      p_from: from ?? null,
-      p_to: to ?? null
-    })
-    .returns<RankingRow[]>();
-
-  if (!error && Array.isArray(data)) {
-    return {
-      profile,
-      ranking: data.map((row) => ({
-        name: row.name,
-        count: Number(row.count),
-        total: Number(row.total),
-        last: row.last
-      }))
-    };
-  }
-
   const history = await getSalesHistory(from, to);
-  return { profile, ranking: buildRanking(history.sales) };
+  return { profile: history.profile, ranking: buildRanking(history.sales) };
 }
 
 export async function getAdminData() {

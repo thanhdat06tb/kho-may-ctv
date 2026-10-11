@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { AuditLog, Phone, Profile, Sale } from "@/types/domain";
+import type { AuditLog, Phone, PhoneEditPermission, Profile, Sale } from "@/types/domain";
 
 type RankingItem = {
   name: string;
@@ -124,13 +124,35 @@ export async function getAvailablePhones(search?: string) {
 
 export async function getPhone(id: string) {
   const { supabase, profile } = await getRequiredProfile();
-  const { data, error } = await supabase
-    .from("phones")
-    .select(detailPhoneSelect)
-    .eq("id", id)
-    .single<Phone>();
-  if (error) throw error;
-  return { phone: data, profile };
+  const [phoneResult, membersResult, permissionsResult] = await Promise.all([
+    supabase
+      .from("phones")
+      .select(detailPhoneSelect)
+      .eq("id", id)
+      .single<Phone>(),
+    supabase.from("profiles").select("id, full_name, role, is_active, created_at").eq("is_active", true).order("full_name").returns<Profile[]>(),
+    supabase
+      .from("phone_edit_permissions")
+      .select("id, phone_id, user_id, granted_by, created_at, profiles:user_id(full_name, role, is_active)")
+      .eq("phone_id", id)
+  ]);
+
+  if (phoneResult.error) throw phoneResult.error;
+
+  const phone = phoneResult.data;
+  const editPermissions = (permissionsResult.error ? [] : permissionsResult.data ?? []) as unknown as PhoneEditPermission[];
+  phone.phone_edit_permissions = editPermissions;
+  const canEdit =
+    profile.role === "ADMIN" ||
+    Boolean(editPermissions.some((permission) => permission.user_id === profile.id));
+
+  return {
+    phone,
+    profile,
+    canEdit,
+    members: profile.role === "ADMIN" ? membersResult.data ?? [] : [],
+    permissionTableReady: !permissionsResult.error
+  };
 }
 
 export async function getDashboardStats() {

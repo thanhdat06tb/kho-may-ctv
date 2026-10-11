@@ -18,6 +18,15 @@ export type PhoneImage = {
   sort_order: number;
 };
 
+export type PhoneEditPermission = {
+  id: string;
+  phone_id: string;
+  user_id: string;
+  granted_by: string;
+  created_at: string;
+  profiles?: Pick<Profile, "full_name" | "role" | "is_active"> | null;
+};
+
 export type Phone = {
   id: string;
   inventory_code: string;
@@ -47,6 +56,7 @@ export type Phone = {
   updated_at: string;
   profiles?: Pick<Profile, "full_name"> | null;
   phone_images?: PhoneImage[];
+  phone_edit_permissions?: PhoneEditPermission[];
 };
 
 export type Sale = {

@@ -56,8 +56,7 @@ const detailPhoneSelect = `
   sold_at,
   created_at,
   updated_at,
-  profiles:added_by(full_name),
-  phone_images(id, phone_id, public_url, storage_path, sort_order)
+  profiles:added_by(full_name)
 `;
 
 const saleSelect = `
@@ -124,12 +123,46 @@ export async function getAvailablePhones(search?: string) {
 
 export async function getPhone(id: string) {
   const { supabase, profile } = await getRequiredProfile();
+  const { data: phone, error } = await supabase
+    .from("phones")
+    .select(detailPhoneSelect)
+    .eq("id", id)
+    .single<Phone>();
+
+  if (error) throw error;
+
+  if (profile.role === "ADMIN") {
+    return {
+      phone,
+      profile,
+      canEdit: true,
+      permissionTableReady: true
+    };
+  }
+
+  const permissionsResult = await supabase
+    .from("phone_edit_permissions")
+    .select("id, phone_id, user_id, granted_by, created_at")
+    .eq("phone_id", id)
+    .eq("user_id", profile.id);
+
+  const editPermissions = (permissionsResult.error ? [] : permissionsResult.data ?? []) as unknown as PhoneEditPermission[];
+  phone.phone_edit_permissions = editPermissions;
+
+  return {
+    phone,
+    profile,
+    canEdit: Boolean(editPermissions.length),
+    permissionTableReady: !permissionsResult.error
+  };
+}
+
+export async function getPhoneEditPermissionData(id: string) {
+  const { supabase, profile } = await getRequiredProfile();
+  if (profile.role !== "ADMIN") redirect(`/kho/${id}`);
+
   const [phoneResult, membersResult, permissionsResult] = await Promise.all([
-    supabase
-      .from("phones")
-      .select(detailPhoneSelect)
-      .eq("id", id)
-      .single<Phone>(),
+    supabase.from("phones").select("id, inventory_code, name, model").eq("id", id).single<Pick<Phone, "id" | "inventory_code" | "name" | "model">>(),
     supabase.from("profiles").select("id, full_name, role, is_active, created_at").eq("is_active", true).order("full_name").returns<Profile[]>(),
     supabase
       .from("phone_edit_permissions")
@@ -139,18 +172,11 @@ export async function getPhone(id: string) {
 
   if (phoneResult.error) throw phoneResult.error;
 
-  const phone = phoneResult.data;
-  const editPermissions = (permissionsResult.error ? [] : permissionsResult.data ?? []) as unknown as PhoneEditPermission[];
-  phone.phone_edit_permissions = editPermissions;
-  const canEdit =
-    profile.role === "ADMIN" ||
-    Boolean(editPermissions.some((permission) => permission.user_id === profile.id));
-
   return {
-    phone,
     profile,
-    canEdit,
-    members: profile.role === "ADMIN" ? membersResult.data ?? [] : [],
+    phone: phoneResult.data,
+    members: membersResult.data ?? [],
+    permissions: (permissionsResult.error ? [] : permissionsResult.data ?? []) as unknown as PhoneEditPermission[],
     permissionTableReady: !permissionsResult.error
   };
 }

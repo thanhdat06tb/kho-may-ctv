@@ -32,6 +32,7 @@ to authenticated
 using (public.my_role() = 'ADMIN');
 
 drop policy if exists "phones_update_admin_or_owner_available" on public.phones;
+drop policy if exists "phones_update_admin_or_granted" on public.phones;
 
 create policy "phones_update_admin_or_granted"
 on public.phones for update

@@ -19,11 +19,11 @@ export function PageHeader({
       <div className="flex min-w-0 items-start gap-3">
         {showBack ? <BackButton fallbackHref={backFallbackHref} /> : null}
         <div className="min-w-0">
-          <h1 className="break-words text-2xl font-bold tracking-normal text-slate-50">{title}</h1>
+          <h1 className="break-words text-[1.65rem] font-bold leading-tight tracking-normal text-slate-50 sm:text-2xl">{title}</h1>
           {description ? <p className="mt-1 text-sm text-slate-400">{description}</p> : null}
         </div>
       </div>
-      {action}
+      {action ? <div className="flex w-full sm:w-auto [&_a]:w-full [&_button]:w-full sm:[&_a]:w-auto sm:[&_button]:w-auto">{action}</div> : null}
     </div>
   );
 }

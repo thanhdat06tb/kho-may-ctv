@@ -11,14 +11,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#07111f",
-        surface: "#0d1b2e",
-        panel: "#12233a",
-        border: "#21344d",
-        muted: "#94a3b8",
-        mint: "#24d6a2",
+        background: "#070d18",
+        surface: "#0d1726",
+        panel: "#142238",
+        border: "#263750",
+        muted: "#9fb0c7",
+        mint: "#2dd4bf",
         danger: "#fb7185",
-        warning: "#fbbf24"
+        warning: "#f59e0b"
       },
       fontFamily: {
         sans: ["var(--font-sans)", "Inter", "Arial", "sans-serif"]

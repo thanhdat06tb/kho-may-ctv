@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { AuditLog, Phone, PhoneEditPermission, PhoneImage, PhoneKind, Profile, Sale } from "@/types/domain";
+import type { AuditLog, Phone, PhoneEditPermission, PhoneImage, Profile, Sale } from "@/types/domain";
 
 type RankingItem = {
   name: string;
@@ -10,7 +10,7 @@ type RankingItem = {
 };
 
 export type StockFilters = {
-  kind?: PhoneKind;
+  tier1?: "normal" | "lock" | "bypass" | "qte";
   series?: string;
   variant?: string;
 };
@@ -122,8 +122,25 @@ export async function getAvailablePhones(search?: string, filters: StockFilters 
     query = query.or(`name.ilike.%${search}%,inventory_code.ilike.%${search}%,model.ilike.%${search}%`);
   }
 
-  if (filters.kind) {
-    query = query.eq("kind", filters.kind);
+  if (filters.tier1 === "lock") {
+    query = query.or("name.ilike.%lock%,name.ilike.%bản lock%,name.ilike.%ban lock%");
+  } else if (filters.tier1 === "bypass") {
+    query = query.or("name.ilike.%bypass%,name.ilike.%pybass%,name.ilike.%bp%");
+  } else if (filters.tier1 === "qte") {
+    query = query.or("name.ilike.%qte%,name.ilike.%qt%,name.ilike.%quốc tế%,name.ilike.%quoc te%,name.ilike.%quoóc tế%");
+  } else if (filters.tier1 === "normal") {
+    query = query
+      .not("name", "ilike", "%lock%")
+      .not("name", "ilike", "%bản lock%")
+      .not("name", "ilike", "%ban lock%")
+      .not("name", "ilike", "%bypass%")
+      .not("name", "ilike", "%pybass%")
+      .not("name", "ilike", "%bp%")
+      .not("name", "ilike", "%qte%")
+      .not("name", "ilike", "%qt%")
+      .not("name", "ilike", "%quốc tế%")
+      .not("name", "ilike", "%quoc te%")
+      .not("name", "ilike", "%quoóc tế%");
   }
 
   if (filters.series) {

@@ -6,26 +6,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Select } from "@/components/ui/input";
 import { iphoneSeriesFilters, iphoneVariantFilters } from "@/lib/constants";
-import { getAvailablePhones } from "@/lib/data";
-import type { PhoneKind } from "@/types/domain";
+import { getAvailablePhones, type StockFilters } from "@/lib/data";
 
-const phoneKinds: { value: PhoneKind; label: string }[] = [
-  { value: "QUOC_TE", label: "Quốc tế" },
-  { value: "LOCK", label: "Lock" },
-  { value: "AN", label: "Ẩn" }
+const tier1Filters: { value: NonNullable<StockFilters["tier1"]>; label: string }[] = [
+  { value: "normal", label: "Bản thường" },
+  { value: "qte", label: "Quốc tế / QTE / QT" },
+  { value: "lock", label: "Lock" },
+  { value: "bypass", label: "Bypass / BP" }
 ];
 
 export default async function StockPage({
   searchParams
 }: {
-  searchParams: Promise<{ q?: string; kind?: string; series?: string; variant?: string }>;
+  searchParams: Promise<{ q?: string; tier1?: string; series?: string; variant?: string }>;
 }) {
-  const { q = "", kind = "", series = "", variant = "" } = await searchParams;
-  const safeKind = phoneKinds.some((item) => item.value === kind) ? (kind as PhoneKind) : undefined;
+  const { q = "", tier1 = "", series = "", variant = "" } = await searchParams;
+  const safeTier1 = tier1Filters.some((item) => item.value === tier1) ? (tier1 as NonNullable<StockFilters["tier1"]>) : undefined;
   const safeSeries = iphoneSeriesFilters.some((item) => item === series) ? series : undefined;
   const safeVariant = iphoneVariantFilters.some((item) => item.value === variant) ? variant : undefined;
   const { phones } = await getAvailablePhones(q.trim(), {
-    kind: safeKind,
+    tier1: safeTier1,
     series: safeSeries,
     variant: safeVariant
   });
@@ -34,7 +34,7 @@ export default async function StockPage({
     <>
       <PageHeader
         title="Kho còn hàng"
-        description="Tìm và lọc máy theo từng bậc."
+        description="Tìm và lọc máy theo tên, dòng máy, loại máy."
         action={
           <Link href="/kho/them">
             <Button>
@@ -60,12 +60,13 @@ export default async function StockPage({
           <div className="grid gap-3 border-t border-border p-4 md:grid-cols-3">
             <label className="text-sm font-semibold text-slate-200">
               Bậc 1
-              <Select className="mt-2" name="kind" defaultValue={safeKind ?? ""}>
-                <option value="">Tất cả phân loại</option>
-                {phoneKinds.map((item) => (
+              <Select className="mt-2" name="tier1" defaultValue={safeTier1 ?? ""}>
+                <option value="">Tất cả bản máy</option>
+                {tier1Filters.map((item) => (
                   <option key={item.value} value={item.value}>{item.label}</option>
                 ))}
               </Select>
+              <span className="mt-1 block text-xs font-normal text-slate-500">Dựa theo ký tự trong tên máy.</span>
             </label>
             <label className="text-sm font-semibold text-slate-200">
               Bậc 2

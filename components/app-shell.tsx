@@ -59,7 +59,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
         </div>
       ) : null}
 
-      <aside className="hidden border-r border-border bg-surface/80 px-4 py-5 lg:block">
+      <aside className="hidden border-r border-border/80 bg-surface/82 px-4 py-5 backdrop-blur lg:block">
         <div className="mb-8 flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-lg bg-mint text-xl font-black text-slate-950">K</div>
           <div>
@@ -101,7 +101,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
         </div>
       </aside>
 
-      <main className="safe-bottom min-w-0 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+      <main className="safe-bottom min-w-0 px-3 py-4 sm:px-6 lg:px-8 lg:py-6">
         {!online && (
           <div className="mb-4 rounded-lg border border-warning/40 bg-warning/10 px-3 py-2 text-sm text-amber-100">
             Đang offline. Danh sách sẽ tải lại khi có mạng; thao tác bán hàng tạm khóa.
@@ -110,8 +110,8 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
         {children}
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 px-2 pb-[env(safe-area-inset-bottom)] pt-2 backdrop-blur lg:hidden">
-        <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}>
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border/90 bg-surface/96 px-2 pb-[env(safe-area-inset-bottom)] pt-2 shadow-[0_-18px_50px_rgba(0,0,0,0.32)] backdrop-blur lg:hidden">
+        <div className="flex gap-1 overflow-x-auto">
           {items.map((item) => {
             const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
             const Icon = item.icon;
@@ -121,7 +121,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
                 href={item.href}
                 onClick={() => handleNavigate(item.href)}
                 className={cn(
-                  "flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[11px] font-semibold text-slate-400",
+                  "flex min-h-14 min-w-[4.4rem] flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[11px] font-semibold text-slate-400",
                   active && "bg-mint/14 text-mint"
                 )}
               >

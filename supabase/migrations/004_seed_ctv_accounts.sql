@@ -45,7 +45,13 @@ begin
         raw_app_meta_data,
         raw_user_meta_data,
         created_at,
-        updated_at
+        updated_at,
+        confirmation_token,
+        recovery_token,
+        email_change_token_new,
+        email_change,
+        email_change_token_current,
+        reauthentication_token
       )
       values (
         '00000000-0000-0000-0000-000000000000',
@@ -58,13 +64,25 @@ begin
         jsonb_build_object('provider', 'email', 'providers', array['email']),
         jsonb_build_object('full_name', account.full_name, 'role', 'CTV'),
         now(),
-        now()
+        now(),
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
       );
     else
       update auth.users
       set
         encrypted_password = crypt('1', gen_salt('bf')),
         email_confirmed_at = coalesce(email_confirmed_at, now()),
+        confirmation_token = coalesce(confirmation_token, ''),
+        recovery_token = coalesce(recovery_token, ''),
+        email_change_token_new = coalesce(email_change_token_new, ''),
+        email_change = coalesce(email_change, ''),
+        email_change_token_current = coalesce(email_change_token_current, ''),
+        reauthentication_token = coalesce(reauthentication_token, ''),
         raw_app_meta_data = jsonb_build_object('provider', 'email', 'providers', array['email']),
         raw_user_meta_data = jsonb_build_object('full_name', account.full_name, 'role', 'CTV'),
         updated_at = now()
@@ -88,7 +106,7 @@ begin
           identity_data = excluded.identity_data,
           updated_at = now()
       $sql$
-      using account_id, jsonb_build_object('sub', account_id::text, 'email', account.email, 'email_verified', true, 'phone_verified', false), account.email;
+      using account_id, jsonb_build_object('sub', account_id::text, 'email', account.email, 'email_verified', false, 'phone_verified', false), account_id::text;
     else
       execute $sql$
         insert into auth.identities (

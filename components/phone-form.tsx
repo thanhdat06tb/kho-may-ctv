@@ -2,25 +2,20 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ImagePlus, Save } from "lucide-react";
+import { Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input, Select, Textarea } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { createClient } from "@/lib/supabase/browser";
 import { phoneSchema } from "@/lib/validations";
 import type { Phone, PhoneStatus, Profile } from "@/types/domain";
 
 const textFields = [
-  ["name", "Tên điện thoại", "iPhone 14 Pro Max"],
+  ["name", "Tên máy", "iPhone 14 Pro Max"],
   ["model", "Dòng máy", "14 Pro Max"],
-  ["storage", "Dung lượng", "256GB"],
-  ["color", "Màu sắc", "Deep Purple"],
-  ["appearance", "Ngoại hình", "Đẹp 98%"],
-  ["screen_status", "Màn hình", "Zin, hiển thị đẹp"],
-  ["face_id_status", "Face ID", "Hoạt động tốt"],
-  ["camera_status", "Camera", "Hoạt động tốt"],
-  ["sim_status", "SIM", "Nhận SIM ổn định"]
+  ["appearance", "Tình trạng", "Zin đẹp, màn zin, pin tốt"],
+  ["storage", "Dung lượng", "256GB"]
 ] as const;
 
 export function PhoneForm({ profile, phone }: { profile: Profile; phone?: Phone }) {
@@ -32,15 +27,15 @@ export function PhoneForm({ profile, phone }: { profile: Profile; phone?: Phone 
       name: phone?.name ?? "",
       model: phone?.model ?? "",
       storage: phone?.storage ?? "",
-      color: phone?.color ?? "",
+      color: phone?.color ?? "Chưa ghi nhận",
       kind: phone?.kind ?? "QUOC_TE",
       carrier: phone?.carrier ?? "",
-      battery: phone?.battery ?? 90,
+      battery: phone?.battery ?? 100,
       appearance: phone?.appearance ?? "",
-      screen_status: phone?.screen_status ?? "",
-      face_id_status: phone?.face_id_status ?? "",
-      camera_status: phone?.camera_status ?? "",
-      sim_status: phone?.sim_status ?? "",
+      screen_status: phone?.screen_status ?? "Theo tình trạng chung",
+      face_id_status: phone?.face_id_status ?? "Theo tình trạng chung",
+      camera_status: phone?.camera_status ?? "Theo tình trạng chung",
+      sim_status: phone?.sim_status ?? "Theo tình trạng chung",
       repair_history: phone?.repair_history ?? "",
       description: phone?.description ?? "",
       price: phone?.price ?? 0,
@@ -79,7 +74,25 @@ export function PhoneForm({ profile, phone }: { profile: Profile; phone?: Phone 
     setLoading(true);
     const formData = new FormData(event.currentTarget);
     const values = Object.fromEntries(formData.entries());
-    const parsed = phoneSchema.safeParse(values);
+    const condition = String(values.appearance ?? phone?.appearance ?? "").trim();
+    const parsed = phoneSchema.safeParse({
+      name: values.name,
+      model: values.model,
+      storage: values.storage,
+      appearance: condition,
+      color: initial.color,
+      kind: initial.kind,
+      carrier: initial.carrier,
+      battery: initial.battery,
+      screen_status: phone?.screen_status ?? condition,
+      face_id_status: phone?.face_id_status ?? condition,
+      camera_status: phone?.camera_status ?? condition,
+      sim_status: phone?.sim_status ?? condition,
+      repair_history: initial.repair_history,
+      description: initial.description,
+      price: initial.price,
+      status: initial.status
+    });
 
     if (!parsed.success) {
       setLoading(false);
@@ -120,9 +133,9 @@ export function PhoneForm({ profile, phone }: { profile: Profile; phone?: Phone 
   return (
     <Card>
       <CardHeader>
-        <h2 className="text-base font-bold text-slate-50">{phone ? "Cập nhật thông tin máy" : "Thêm điện thoại"}</h2>
+        <h2 className="text-base font-bold text-slate-50">{phone ? "Cập nhật máy" : "Thêm máy"}</h2>
         <p className="mt-1 text-xs text-slate-400">
-          {profile.role === "CTV" ? "CTV chỉ sửa được máy mình thêm khi máy còn hàng." : "Admin có quyền chỉnh toàn bộ máy."}
+          {profile.role === "CTV" ? "Chỉ nhập thông tin cần thiết để lên kho nhanh." : "Admin vẫn có thể chỉnh máy bằng form tối giản này."}
         </p>
       </CardHeader>
       <CardContent>
@@ -133,55 +146,14 @@ export function PhoneForm({ profile, phone }: { profile: Profile; phone?: Phone 
               <Input className="mt-2" name={name} defaultValue={String(initial[name])} placeholder={placeholder} required />
             </label>
           ))}
-          <label className="block text-sm font-semibold text-slate-200">
-            Phân loại
-            <Select className="mt-2" name="kind" defaultValue={initial.kind}>
-              <option value="QUOC_TE">Quốc tế</option>
-              <option value="LOCK">Lock</option>
-              <option value="AN">Ẩn / cần xác minh</option>
-            </Select>
-          </label>
-          <label className="block text-sm font-semibold text-slate-200">
-            Nhà mạng khóa
-            <Input className="mt-2" name="carrier" defaultValue={initial.carrier ?? ""} placeholder="Chỉ nhập nếu máy Lock" />
-          </label>
-          <label className="block text-sm font-semibold text-slate-200">
-            Pin (%)
-            <Input className="mt-2" name="battery" type="number" min={0} max={100} defaultValue={initial.battery} required />
-          </label>
-          <label className="block text-sm font-semibold text-slate-200">
-            Giá bán
-            <Input className="mt-2" name="price" type="number" min={0} step={1000} defaultValue={initial.price} required />
-          </label>
-          <label className="block text-sm font-semibold text-slate-200">
-            Trạng thái
-            <Select className="mt-2" name="status" defaultValue={initial.status}>
-              <option value="CON_HANG">Còn hàng</option>
-              <option value="CHO_XAC_MINH">Chờ xác minh</option>
-              <option value="DA_GIU">Đã giữ</option>
-              <option value="LUU_TRU">Lưu trữ</option>
-            </Select>
-          </label>
-          <label className="block text-sm font-semibold text-slate-200">
-            Ảnh sản phẩm
-            <Input className="mt-2" type="file" accept="image/*" multiple onChange={(event) => setFiles(event.target.files)} />
-          </label>
           <label className="block text-sm font-semibold text-slate-200 sm:col-span-2">
-            Lịch sử sửa chữa / thay thế
-            <Textarea className="mt-2" name="repair_history" defaultValue={initial.repair_history ?? ""} />
+            Ảnh
+            <Input className="mt-2" type="file" accept="image/*" multiple={!phone} required={!phone} onChange={(event) => setFiles(event.target.files)} />
           </label>
-          <label className="block text-sm font-semibold text-slate-200 sm:col-span-2">
-            Mô tả tình trạng chi tiết
-            <Textarea className="mt-2" name="description" defaultValue={initial.description ?? ""} />
-          </label>
-          <div className="flex flex-col gap-2 sm:col-span-2 sm:flex-row">
+          <div className="sm:col-span-2">
             <Button type="submit" size="lg" disabled={loading}>
               <Save className="h-5 w-5" />
               {loading ? "Đang lưu..." : "Lưu máy"}
-            </Button>
-            <Button type="button" variant="secondary" size="lg" onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}>
-              <ImagePlus className="h-5 w-5" />
-              Chọn ảnh
             </Button>
           </div>
         </form>

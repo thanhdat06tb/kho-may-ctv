@@ -21,3 +21,12 @@ export const phoneStatusTone: Record<PhoneStatus, "mint" | "warning" | "danger" 
   DA_BAN: "danger",
   LUU_TRU: "muted"
 };
+
+export const iphoneSeriesFilters = ["SE", "6", "6S", "7", "8", "X", "XR", "XS", "11", "12", "13", "14", "15", "16", "17", "18"] as const;
+
+export const iphoneVariantFilters = [
+  { value: "base", label: "Thường" },
+  { value: "plus", label: "Plus" },
+  { value: "pro", label: "Pro" },
+  { value: "pro_max", label: "Pro Max / PRM" }
+] as const;

@@ -1,12 +1,18 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { AuditLog, Phone, PhoneEditPermission, Profile, Sale } from "@/types/domain";
+import type { AuditLog, Phone, PhoneEditPermission, PhoneImage, PhoneKind, Profile, Sale } from "@/types/domain";
 
 type RankingItem = {
   name: string;
   count: number;
   total: number;
   last: string;
+};
+
+export type StockFilters = {
+  kind?: PhoneKind;
+  series?: string;
+  variant?: string;
 };
 
 const stockPhoneSelect = `
@@ -104,7 +110,7 @@ export async function getRequiredProfile() {
   return { supabase, profile };
 }
 
-export async function getAvailablePhones(search?: string) {
+export async function getAvailablePhones(search?: string, filters: StockFilters = {}) {
   const { supabase, profile } = await getRequiredProfile();
   let query = supabase
     .from("phones")
@@ -116,6 +122,24 @@ export async function getAvailablePhones(search?: string) {
     query = query.or(`name.ilike.%${search}%,inventory_code.ilike.%${search}%,model.ilike.%${search}%`);
   }
 
+  if (filters.kind) {
+    query = query.eq("kind", filters.kind);
+  }
+
+  if (filters.series) {
+    query = query.ilike("model", `%${filters.series}%`);
+  }
+
+  if (filters.variant === "base") {
+    query = query.not("model", "ilike", "%Plus%").not("model", "ilike", "%Pro%");
+  } else if (filters.variant === "plus") {
+    query = query.ilike("model", "%Plus%");
+  } else if (filters.variant === "pro") {
+    query = query.ilike("model", "%Pro%").not("model", "ilike", "%Max%");
+  } else if (filters.variant === "pro_max") {
+    query = query.or("model.ilike.%Pro Max%,model.ilike.%ProMax%,model.ilike.%PRM%");
+  }
+
   const { data, error } = await query.returns<Phone[]>();
   if (error) throw error;
   return { profile, phones: data ?? [] };
@@ -123,15 +147,15 @@ export async function getAvailablePhones(search?: string) {
 
 export async function getPhone(id: string) {
   const { supabase, profile } = await getRequiredProfile();
-  const { data: phone, error } = await supabase
-    .from("phones")
-    .select(detailPhoneSelect)
-    .eq("id", id)
-    .single<Phone>();
-
-  if (error) throw error;
+  const phoneQuery = supabase.from("phones").select(detailPhoneSelect).eq("id", id).single<Phone>();
+  const imageQuery = supabase.from("phone_images").select("id, phone_id, storage_path, public_url, sort_order").eq("phone_id", id).order("sort_order").limit(1).returns<PhoneImage[]>();
 
   if (profile.role === "ADMIN") {
+    const [phoneResult, imageResult] = await Promise.all([phoneQuery, imageQuery]);
+    if (phoneResult.error) throw phoneResult.error;
+    const phone = phoneResult.data;
+    phone.phone_images = imageResult.data ?? [];
+
     return {
       phone,
       profile,
@@ -140,12 +164,20 @@ export async function getPhone(id: string) {
     };
   }
 
-  const permissionsResult = await supabase
-    .from("phone_edit_permissions")
-    .select("id, phone_id, user_id, granted_by, created_at")
-    .eq("phone_id", id)
-    .eq("user_id", profile.id);
+  const [phoneResult, imageResult, permissionsResult] = await Promise.all([
+    phoneQuery,
+    imageQuery,
+    supabase
+      .from("phone_edit_permissions")
+      .select("id, phone_id, user_id, granted_by, created_at")
+      .eq("phone_id", id)
+      .eq("user_id", profile.id)
+  ]);
 
+  if (phoneResult.error) throw phoneResult.error;
+
+  const phone = phoneResult.data;
+  phone.phone_images = imageResult.data ?? [];
   const editPermissions = (permissionsResult.error ? [] : permissionsResult.data ?? []) as unknown as PhoneEditPermission[];
   phone.phone_edit_permissions = editPermissions;
 

@@ -27,6 +27,7 @@ begin
   end if;
 
   if public.my_role() <> 'ADMIN'
+    and v_phone.added_by <> v_actor
     and not exists (
       select 1
       from public.phone_edit_permissions p

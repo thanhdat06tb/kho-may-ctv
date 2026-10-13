@@ -67,7 +67,7 @@ export type Sale = {
   sold_at: string;
   voided_at: string | null;
   void_reason: string | null;
-  phones?: Pick<Phone, "name" | "inventory_code"> | null;
+  phones?: Pick<Phone, "name" | "inventory_code" | "price"> | null;
   profiles?: Pick<Profile, "full_name"> | null;
 };
 

@@ -90,7 +90,7 @@ export function PhoneForm({ profile, phone }: { profile: Profile; phone?: Phone 
       sim_status: phone?.sim_status ?? condition,
       repair_history: initial.repair_history,
       description: initial.description,
-      price: initial.price,
+      price: values.price,
       status: initial.status
     });
 
@@ -135,7 +135,7 @@ export function PhoneForm({ profile, phone }: { profile: Profile; phone?: Phone 
       <CardHeader>
         <h2 className="text-base font-bold text-slate-50">{phone ? "Cập nhật máy" : "Thêm máy"}</h2>
         <p className="mt-1 text-xs text-slate-400">
-          {profile.role === "CTV" ? "Chỉ nhập thông tin cần thiết để lên kho nhanh." : "Admin vẫn có thể chỉnh máy bằng form tối giản này."}
+          {profile.role === "CTV" ? "Nhập nhanh thông tin chính và giá dự kiến bán ra." : "Admin vẫn có thể chỉnh máy bằng form tối giản này."}
         </p>
       </CardHeader>
       <CardContent>
@@ -146,6 +146,10 @@ export function PhoneForm({ profile, phone }: { profile: Profile; phone?: Phone 
               <Input className="mt-2" name={name} defaultValue={String(initial[name])} placeholder={placeholder} required />
             </label>
           ))}
+          <label className="block text-sm font-semibold text-slate-200">
+            Giá bán ra
+            <Input className="mt-2" name="price" type="number" min={1} step={1000} defaultValue={initial.price || ""} placeholder="12000000" required />
+          </label>
           <label className="block text-sm font-semibold text-slate-200 sm:col-span-2">
             Ảnh
             <Input className="mt-2" type="file" accept="image/*" multiple={!phone} required={!phone} onChange={(event) => setFiles(event.target.files)} />

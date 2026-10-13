@@ -74,7 +74,7 @@ const saleSelect = `
   voided_at,
   voided_by,
   void_reason,
-  phones(name, inventory_code),
+  phones(name, inventory_code, price),
   profiles:seller_id(full_name)
 `;
 
@@ -201,7 +201,7 @@ export async function getPhone(id: string) {
   return {
     phone,
     profile,
-    canEdit: Boolean(editPermissions.length),
+    canEdit: phone.added_by === profile.id || Boolean(editPermissions.length),
     permissionTableReady: !permissionsResult.error
   };
 }
@@ -287,6 +287,32 @@ export async function getSalesHistory(from?: string, to?: string) {
 export async function getRankingOnly(from?: string, to?: string): Promise<{ profile: Profile; ranking: RankingItem[] }> {
   const history = await getSalesHistory(from, to);
   return { profile: history.profile, ranking: buildRanking(history.sales) };
+}
+
+export async function getMySalesSummary() {
+  const { supabase, profile } = await getRequiredProfile();
+  const { data, error } = await supabase
+    .from("sales")
+    .select(saleSelect)
+    .eq("seller_id", profile.id)
+    .is("voided_at", null)
+    .order("sold_at", { ascending: false })
+    .returns<Sale[]>();
+
+  if (error) throw error;
+
+  const sales = data ?? [];
+  const listedTotal = sales.reduce((sum, sale) => sum + Number(sale.phones?.price ?? 0), 0);
+  const finalTotal = sales.reduce((sum, sale) => sum + Number(sale.final_price), 0);
+
+  return {
+    profile,
+    sales,
+    count: sales.length,
+    listedTotal,
+    finalTotal,
+    profit: finalTotal - listedTotal
+  };
 }
 
 export async function getAdminData() {

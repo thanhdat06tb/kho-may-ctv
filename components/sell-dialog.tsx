@@ -15,8 +15,9 @@ import type { Phone } from "@/types/domain";
 export function SellDialog({ phone }: { phone: Phone }) {
   const router = useRouter();
   const online = useOnline();
+  const saleable = ["CON_HANG", "DA_GIU"].includes(phone.status);
   const [open, setOpen] = useState(false);
-  const [price, setPrice] = useState(phone.price);
+  const [price, setPrice] = useState(phone.price > 0 ? phone.price : 1);
   const [loading, setLoading] = useState(false);
 
   async function confirmSale() {
@@ -24,6 +25,11 @@ export function SellDialog({ phone }: { phone: Phone }) {
       toast.error("Không thể bán khi offline");
       return;
     }
+    if (!saleable) {
+      toast.error("Máy này không còn ở trạng thái có thể bán");
+      return;
+    }
+
     const sure = window.confirm(`Xác nhận đã hoàn tất giao dịch ${phone.inventory_code} với giá ${formatVnd(price)}?`);
     if (!sure) return;
 
@@ -47,9 +53,9 @@ export function SellDialog({ phone }: { phone: Phone }) {
 
   return (
     <>
-      <Button size="lg" disabled={!online || !["CON_HANG", "DA_GIU"].includes(phone.status)} onClick={() => setOpen(true)}>
+      <Button size="lg" disabled={!online || !saleable} onClick={() => saleable && setOpen(true)}>
         <BadgeCheck className="h-5 w-5" />
-        Xác nhận đã bán
+        {phone.status === "DA_BAN" ? "Đã bán" : "Xác nhận đã bán"}
       </Button>
       {open ? (
         <div className="fixed inset-0 z-50 grid place-items-end bg-black/60 p-0 sm:place-items-center sm:p-4">
@@ -62,11 +68,11 @@ export function SellDialog({ phone }: { phone: Phone }) {
                 </p>
               </div>
               <div className="rounded-lg border border-border bg-background/60 p-3 text-sm">
-                <p className="text-slate-400">Giá niêm yết</p>
+                <p className="text-slate-400">Giá bán ra</p>
                 <p className="mt-1 text-xl font-black text-mint">{formatVnd(phone.price)}</p>
               </div>
               <label className="block text-sm font-semibold text-slate-200">
-                Giá chốt thực tế
+                Giá bán thực tế
                 <Input className="mt-2" type="number" min={1} step={1000} value={price} onChange={(event) => setPrice(Number(event.target.value))} />
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -77,9 +83,7 @@ export function SellDialog({ phone }: { phone: Phone }) {
                   {loading ? "Đang xử lý..." : "Chốt bán"}
                 </Button>
               </div>
-              <p className="text-xs text-slate-500">
-                Giao dịch dùng RPC bảo mật: người bán lấy từ phiên đăng nhập, khóa dòng máy và rollback nếu thất bại.
-              </p>
+              <p className="text-xs text-slate-500">Sau khi chốt bán, giao dịch sẽ nằm trong trang Thống kê của tài khoản đang đăng nhập.</p>
             </CardContent>
           </Card>
         </div>

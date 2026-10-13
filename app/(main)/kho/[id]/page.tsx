@@ -1,11 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
-import { Edit3, ShieldCheck } from "lucide-react";
-import { ArchivePhoneButton } from "@/components/archive-phone-button";
 import { DeletePhoneButton } from "@/components/delete-phone-button";
 import { PageHeader } from "@/components/page-header";
 import { SellDialog } from "@/components/sell-dialog";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getPhone } from "@/lib/data";
 
@@ -13,7 +9,7 @@ export default async function PhoneDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const { phone, profile, canEdit } = await getPhone(id);
   const cover = phone.phone_images?.[0]?.public_url;
-  const canManage = profile.role === "ADMIN" || canEdit;
+  const canDelete = profile.role === "ADMIN" || canEdit;
 
   return (
     <>
@@ -36,24 +32,7 @@ export default async function PhoneDetailPage({ params }: { params: Promise<{ id
 
           <div className="mt-4 grid gap-2 sm:flex sm:flex-wrap">
             <SellDialog phone={phone} />
-            {canEdit ? (
-              <Link href={`/kho/${phone.id}/sua`}>
-                <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-                  <Edit3 className="h-5 w-5" />
-                  Sửa thông tin
-                </Button>
-              </Link>
-            ) : null}
-            {canManage ? <ArchivePhoneButton phone={phone} /> : null}
-            {canManage ? <DeletePhoneButton phone={phone} /> : null}
-            {profile.role === "ADMIN" ? (
-              <Link href={`/kho/${phone.id}/quyen`}>
-                <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-                  <ShieldCheck className="h-5 w-5" />
-                  Phân quyền sửa
-                </Button>
-              </Link>
-            ) : null}
+            {canDelete ? <DeletePhoneButton phone={phone} /> : null}
           </div>
         </CardContent>
       </Card>

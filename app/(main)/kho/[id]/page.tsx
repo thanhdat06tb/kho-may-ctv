@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Edit3, ShieldCheck } from "lucide-react";
 import { ArchivePhoneButton } from "@/components/archive-phone-button";
+import { DeletePhoneButton } from "@/components/delete-phone-button";
 import { PageHeader } from "@/components/page-header";
 import { SellDialog } from "@/components/sell-dialog";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ export default async function PhoneDetailPage({ params }: { params: Promise<{ id
   const { id } = await params;
   const { phone, profile, canEdit } = await getPhone(id);
   const cover = phone.phone_images?.[0]?.public_url;
-  const canArchive = profile.role === "ADMIN" || canEdit;
+  const canManage = profile.role === "ADMIN" || canEdit;
 
   return (
     <>
@@ -43,7 +44,8 @@ export default async function PhoneDetailPage({ params }: { params: Promise<{ id
                 </Button>
               </Link>
             ) : null}
-            {canArchive ? <ArchivePhoneButton phone={phone} /> : null}
+            {canManage ? <ArchivePhoneButton phone={phone} /> : null}
+            {canManage ? <DeletePhoneButton phone={phone} /> : null}
             {profile.role === "ADMIN" ? (
               <Link href={`/kho/${phone.id}/quyen`}>
                 <Button variant="secondary" size="lg" className="w-full sm:w-auto">

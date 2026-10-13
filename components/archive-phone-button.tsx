@@ -40,7 +40,7 @@ export function ArchivePhoneButton({ phone }: { phone: Phone }) {
   }
 
   return (
-    <Button variant="danger" size="lg" disabled={!online || loading || phone.status === "DA_BAN" || phone.status === "LUU_TRU"} onClick={archivePhone}>
+    <Button variant="secondary" size="lg" disabled={!online || loading || phone.status === "DA_BAN" || phone.status === "LUU_TRU"} onClick={archivePhone}>
       <Archive className="h-5 w-5" />
       {loading ? "Đang ẩn..." : "Ẩn sản phẩm"}
     </Button>

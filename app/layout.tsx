@@ -5,7 +5,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Kho Máy CTV",
-  description: "PWA quản lý kho iPhone cũ cho cộng tác viên",
+  description: "PWA quản lý kho iPhone cho cộng tác viên",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

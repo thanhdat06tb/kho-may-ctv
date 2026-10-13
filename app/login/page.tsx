@@ -44,6 +44,7 @@ export default function LoginPage() {
           <h1 className="text-3xl font-bold text-slate-50">Kho Máy CTV</h1>
           <p className="mt-2 text-sm text-slate-400">Đăng nhập để quản lý kho iPhone chung</p>
         </div>
+
         <Card>
           <CardContent>
             {inactive ? (
@@ -51,14 +52,30 @@ export default function LoginPage() {
                 Tài khoản chưa được kích hoạt hoặc đã bị vô hiệu hóa.
               </div>
             ) : null}
+
             <form className="space-y-4" onSubmit={handleSubmit}>
               <label className="block text-sm font-semibold text-slate-200">
                 Email
-                <Input className="mt-2" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                <Input
+                  className="mt-2"
+                  type="email"
+                  value={email}
+                  autoComplete="email"
+                  inputMode="email"
+                  onChange={(event) => setEmail(event.target.value)}
+                  required
+                />
               </label>
               <label className="block text-sm font-semibold text-slate-200">
                 Mật khẩu
-                <Input className="mt-2" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+                <Input
+                  className="mt-2"
+                  type="password"
+                  value={password}
+                  autoComplete="current-password"
+                  onChange={(event) => setPassword(event.target.value)}
+                  required
+                />
               </label>
               <Button className="w-full" size="lg" disabled={loading}>
                 <LogIn className="h-5 w-5" />
@@ -67,7 +84,8 @@ export default function LoginPage() {
             </form>
           </CardContent>
         </Card>
-        <p className="mt-4 text-center text-xs text-slate-500">Tài khoản do Admin tạo hoặc mời qua Supabase Auth.</p>
+
+        <p className="mt-4 text-center text-xs text-slate-500">Tài khoản do Admin cấp trong Supabase Auth.</p>
       </div>
     </main>
   );

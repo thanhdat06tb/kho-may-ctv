@@ -24,7 +24,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
   const router = useRouter();
   const online = useOnline();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
-  const refreshable = !pathname.startsWith("/kho/them");
+  const refreshable = pathname === "/dashboard" || pathname === "/kho" || pathname === "/thong-ke" || pathname === "/lich-su" || pathname === "/admin";
   useStockRealtime(online, refreshable);
 
   const items = useMemo(
@@ -58,6 +58,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
           <div className="h-full w-1/2 animate-[slide-progress_0.9s_ease-in-out_infinite] bg-mint" />
         </div>
       ) : null}
+
       <aside className="hidden border-r border-border bg-surface/80 px-4 py-5 lg:block">
         <div className="mb-8 flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-lg bg-mint text-xl font-black text-slate-950">K</div>
@@ -66,6 +67,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
             <p className="text-xs text-slate-400">iPhone tồn kho chung</p>
           </div>
         </div>
+
         <nav className="space-y-1">
           {items.map((item) => {
             const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -86,6 +88,7 @@ export function AppShell({ profile, children }: { profile: Profile; children: Re
             );
           })}
         </nav>
+
         <div className="mt-8 rounded-lg border border-border bg-background/50 p-3">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <UserRound className="h-4 w-4 text-mint" />
